@@ -1,0 +1,29 @@
+<!-- Launch File for traxxas obstacle avoid state machine using urg laser -->
+<!-- <node pkg="name_of_package" type="name_of_packge" name="name_of_executable" 
+output="screen"/> -->
+
+<!-- EXAMPLE NODE LAUNCH-->
+<!-- Note:  'type' is the file you want to launch in the package whereas the 'name' is a unique identifier for your node. -->
+
+<!-- <node pkg="joy" type="joy_node" name="joy" output="screen" >
+		<param name="dev" value="/dev/input/js0"/>	
+		<param name="autorepeat_rate" value="5"/>	
+	</node> -->
+
+
+ <launch>
+    
+
+	<node pkg="nmea_navsat_driver" type="nmea_serial_driver" name="gpsLatLon_node" output="screen" >			
+	</node>
+	
+	<node pkg="gps_common" type="utm_odometry_node" name="gpsUTM_node" output="screen" >			
+	</node>
+	
+	<node pkg="gps_waypoint_recorder" type="button_publisher.py" name="button_poller" output="screen" >			
+	</node>
+	
+	<node pkg="gps_waypoint_recorder" type="coord_recorder.py" name="coord_recorder" output="screen" >
+        </node>
+	
+</launch>

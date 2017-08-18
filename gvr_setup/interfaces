@@ -1,0 +1,67 @@
+# interfaces(5) file used by ifup(8) and ifdown(8)
+# Include files from /etc/network/interfaces.d:
+source-directory /etc/network/interfaces.d
+
+#The loopback network interface
+#Leave these lines uncommented
+
+auto lo
+iface lo inet loopback
+
+
+
+#uncomment the following line if you wish to use an ethernet cable to 
+#connect to a network such as EECSnet where a dhcp server issues IP addresses automatically
+
+#iface eth0 inet dhcp
+
+
+
+
+#the following lines are used to assign a static IP address to the ethernet port;
+#this is convenient for when you wish to connect your RPi directly to a laptop computer 
+#replace .xxx with an IP address ranging from 1 to 254
+#your labtap must have an IP on the same sub-network 192.168.0.xxx
+
+auto enx_(your_Ethernet_MAC_address)
+iface enx_(your_Ethernet_MAC_address) inet static
+	address 192.168.0.xxx
+	netmask 255.255.255.0
+       
+
+
+
+#The following lines are for connecting to the Department's EECS DS3
+#Ask your instructor whether you should connect to the DS3 via DHCP or static IP
+#For DHCP, uncomment the following four lines:
+  
+#auto wlan0
+#iface wlan0 inet dhcp
+#        wpa-ssid "EECSDS3"
+#        wpa-psk "see your instructor"
+
+
+#For static IP assignment, uncomment the following 8 lines
+#auto wlan0
+#iface wlan0 inet static
+#	address 192.168.200.213
+#	netmask 255.255.255.0
+#	gateway 192.168.200.254
+#	wpa-ssid "EECSDS3"
+#	wpa-psk "see your instructor"
+#	dns-nameservers 66.155.216.122 207.59.153.242
+	
+
+
+
+#uncomment the following lines to connect to the Department's AT&T Mi-Fi router
+
+auto wlan0
+iface wlan0 inet static
+       address 192.168.23.213
+       netmask 255.255.255.0
+       gateway 192.168.23.1
+       wpa-ssid "crc_wifi"
+       wpa-psk "see your instructor"
+       dns-nameservers 8.8.8.8
+
