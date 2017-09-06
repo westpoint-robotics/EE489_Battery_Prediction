@@ -1,38 +1,37 @@
-# Network Configuration Instructions for the Raspberry Pi (RPi)
+# Instructions connecting to for GVR-Bot 
+structions for connecting remote computers to the GVR-Bot and for teleoperating the GVR-Bot from remote workstation.
 
-This set of instructions explains how to connect the Raspberry Pi to different networks.  For instance, depending upon the circumstances, you may wish to connect your Raspberry Pi to the Internet or another computer via the wireless EECSDS3, the wired or wireless EECSnet, or the AT&T Mi-Fi.  In some cases, it may be necessary to establish a peer-to-peer connection between the Raspberry Pi and a laptop using an Ethernet cable.  These instructions are intended to assist you with changing between these network options.  
-
-
-### Template /etc/network/interfaces file for your Raspberry Pi.
-1.  On some installations of Ubuntu-Mate, we have noticed that the GUI network manager is not loading properly and is unavailable.  As a result, it may be best to configure different connections using the "interfaces" file located in the /etc/network directory of Raspberry Pi.     
-    + Inside this Github directory, there is a template "interfaces" file that you can copy over to your Raspberry Pi.  The file contains comments on which lines should be uncommented in order to connect to certain networks.
+### Steps for getting an external Linux computer to communicate with the GVR-Bot using ROS.
+1.  Turn on the GVR-Bot via the power button.
+2.  Connect to the GVR-Bot's wireless network  
+    + After some time, the GVR-Bot's internal access point (AP) router will advertise its SSID (i.e., network identification).
+    + From your Linux computer, connect to this access point.
+    + See your instructor for the password to connect to the GVR-Bot's network.
+3.  Confirm connectivity to the GVR-Bot by pinging the GVR-Bot's internal computer:  
+    + `ping 192.168.0.101`   
+4.  Ensure GVR-Bot is configured as the ROS MASTER when networked with other computers.
+    + See Turtlebot Networking tutorial as a guide for completing this task:  `http://wiki.ros.org/turtlebot/Tutorials/indigo/Network%20Configuration`
+    + Establish an ssh connection to the GVR-Bot's computer:  `ssh gvrbot@192.168.0.101`
+    + See instructor for the password for the user account on the GVR-Bot.
+    + Once logged onto the GVR-Bot computer, check its bashrc file by typing the following in the command line:  `sudo nano ~/.bashrc` 
+    + Add the two following lines at the bottom of the bashrc file if they aren't already present:
+        + `ROS_MASTER_URI=http://192.168.0.101:11311`
+        + `ROS_HOSTNAME=192.168.0.101`
+    + If changes were made to the bashrc, exit nano and save changes by typing ctrl+x.
+5.  Ensure the external Linux computer is configured to point to the ROS MASTER so that they can communication.
+    + On your Linux computer, check its bashrc file:  `sudo nano ~/.bashrc`
+    + Add the two following lines at the bottom of the bashrc file if they aren't already present:
+        + `ROS_MASTER_URI=http://192.168.0.101:11311`
+        + `ROS_HOSTNAME=IP_OF_PC` 
+            + where IP_OF_PC is the IP address of your Linux computer.  This is the IP address issued to the computer via DHCP by the GVR-Bot's router.  Check by your computer's IP by typing `ifconfig` in the command line.
+    + If changes were made to the bashrc, exit nano and save changes by typing ctrl+x.
+6.  Test whether the computers are networked and able to pass ROS messages.
+    + From your Linux computer, type `rostopic echo`.  You should see a listing of topics being published by the GVR-Bot.
+    + Test whether your Linux computer can send ROS messages to the GVR-Bot
+        + Publish a command velocity message to move the tracks by typing:  `rostopic pub -r 10 /cmd_vel geometry_msgs/Twist  '{linear:  {x: 0.1, y: 0.0, z: 0.0}, angular: {x: 0.0,y: 0.0,z: 0.0}}'`\
+        + Stop publishing this command to stop the tracks by pressing cltr+c in the same terminal window.  
     
-### Establishing an Ethernet connection directly between the RPi and a laptop. 
-1.  At times, it may be necessary to establish a direct Ethernet connection between your laptop and RPi using a CAT5 cable.  This is especially useful when you encounter wireless trouble and can't connect the RPi to a montior for troubleshooting.
-2.  Here are the steps for establishing such a connection:
-    + Program your RPi to automatically configure its Ethernet port at every startup so that it is ready for connecting to your laptop.
-    + You'll need to find out the name of your ethernet port on the RPi in order update your "interfaces" file.
-        + On your RPi, type `ipconfig -a` to show all interfaces, including those that are currently down.
-        + Note the interface name of your ethernet port; it should begin with 'enx' and follow with the MAC address of the interface.
-        + See the template 'interfaces file'; uncomment the portion for configuring a static IP address to the Ethernet port.
-        + Be sure to change the interface name, as well as the IP address you would like to give your RPi ethernet port.
-        + For these changes to take effect, type `sudo ifup enx_(your_Ethernet_MAC_address)` in the terminal.
-    + Next, configure your laptop Ethernet port to be on the same network.
-        + Use the Ubuntu Network Manager GUI to configure this Ethernet connection.
-            + Click on the wireless icon in the upper-left corner of the screen.
-            + Click 'Edit Connections'
-            + Highlight 'Ethernet', then click 'Add'
-            + Ensure the dialog box drop-down has 'Ethernet' selected
-            + On the 'General' tab, unselect 'Automatically connect...'
-            + On the 'Ethernet' tab, select the appropriate Ethernet port
-            + On the 'IPv4 Settings' tab, select 'Manual' in the 'Method' drop-down; then click 'Add' to insert the IP address & subnet mask.
-            + Choose an IP address on the same network as the RPi (i.e., IP = 192.168.0.xxx , Subnet = 255.255.255.0 where xxx = some number from 1-254 but is different than the IP on the RPi)
-            + Click 'Save'
-    + Once both computers have been configured, you should be able to ping the RPi from the laptop.
-         + You may need to reboot the RPi for the settings in the 'interfaces' file to take effect.
-         + Ensure your Ethernet port on your laptop is 'up' by typing the following command in the terminal:  `sudo ifconfig yourLaptopEthernetPortName up` or by selecting the interface in Network Manager GUI.
-         + Once the interface is up, try pinging the RPi by typing `ping 192.168.0.xxx` where xxx is the last octet address of your RPi.
-         + If you can successfully ping the RPi, then you'll be able to ssh into the device. 
+   
             
     
               
