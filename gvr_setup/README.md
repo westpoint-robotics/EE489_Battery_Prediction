@@ -1,5 +1,5 @@
-# Instructions connecting to for GVR-Bot 
-structions for connecting remote computers to the GVR-Bot and for teleoperating the GVR-Bot from remote workstation.
+# Instructions for connecting Linux computers to the GVR-Bot 
+Istructions for connecting remote computers to the GVR-Bot
 
 ### Steps for getting an external Linux computer to communicate with the GVR-Bot using ROS.
 1.  Turn on the GVR-Bot via the power button.
