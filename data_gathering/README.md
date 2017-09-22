@@ -9,3 +9,4 @@ This folder contains files we used to gather data to be processed by the ML syst
   + add links to readme
   + do the nav monitor / set up a schema
   + integrate all code segments into one
+    + make them all improtable and create a dataGather.py script

@@ -8,4 +8,4 @@ This repository contains files related to models used to predict the state of ch
 
 ### 3. [Instructions for setting up and commanding the GVR-Bot](https://github.com/westpoint-robotics/EE489_Battery_Prediction/blob/master/gvr_setup/README.md)
 
-
+### 4. [Instructions/Code for data gathering](https://github.com/westpoint-robotics/EE489_Battery_Prediction/tree/master/data_gathering)
