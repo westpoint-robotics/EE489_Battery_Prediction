@@ -2,7 +2,6 @@
 #!/usr/bin/env python
 # license removed for brevity
 import rospy
-import time
 from geometry_msgs.msg import Twist, Vector3
 from sensor_msgs.msg import Joy
 
@@ -22,27 +21,51 @@ def getter(msg):
     elif(msg.buttons[3]): #Y button to SPIN in circle
         print("SPIN")
         currentState = 3
-    #elif(msg.axes[-1]): #Last reference is last element in the array      
-    #    pub.queue_size=10
-    elif(msg.axes[1] == 1 and msg.axes[-3] == -1):
+    elif(msg.axes[1] == 1 and msg.axes[-3] == -1): # max speed if going foward and R-trigger is pulled
         currentState = 4
 
+# this is executed if ran from cli
 if __name__ == '__main__':
     try:
+        # create local node this script will identify as
         rospy.init_node('listener', anonymous=True)
+
+        # Subscriber capability on given path enabled
+        #       /joy:  the path to listen on
+        #        Joy:  passes the object definition will recv
+        #     getter:  passes ptr to callback function on recv
         rospy.Subscriber("/joy", Joy, getter)
-        rate = rospy.Rate(10) #10 Hz
+
+        # Publisher capability on given path enabled
+        #   /cmd_vel: the path to publish on
+        #      Twist: passes a sample data type to send
+        # queue_size: limits recv_node queue
         pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
-        post = Twist(Vector3(0,0,0),Vector3(0,0,0))
+
+        # sets cmd send rate to 10 times/ second
+        rate = rospy.Rate(10) #10 Hz
+
+        # inits the payloads to send to the robot
+        stop = Twist(Vector3(0,0,0),Vector3(0,0,0))
         forward = Twist(Vector3(.2,0,0),Vector3(0,0,0))
         reverse = Twist(Vector3(-.2,0,0),Vector3(0,0,0))
         spin = Twist(Vector3(0,1,0),Vector3(0,0,0))
-        lightspeed = Twist(Vector3(1,0,0),Vector3(0,0,0))       
-#        rospy.spin()
+        lightspeed = Twist(Vector3(1,0,0),Vector3(0,0,0))
+
+        # loop to send commands until halt
         while not rospy.is_shutdown():
-            # do stuff w globals
-            msg = {0:post,1:forward,2:reverse,3:spin,4:lightspeed}
+
+            # each loop depending on which button is pushed we send it
+            # to the robot to be executed
+            msg = {0:stop,1:forward,2:reverse,3:spin,4:lightspeed}
             pub.publish(msg[currentState])
+
+            # must sleep so as to not overwhelm the robot
+            # with unnecessary amounts of commands
             rate.sleep()
     except rospy.ROSInterruptException:
         pass
+    
+    except KeyboardInterrupt:
+        print "User canceled...Exiting"
+        #TODO handle this and clean exit
