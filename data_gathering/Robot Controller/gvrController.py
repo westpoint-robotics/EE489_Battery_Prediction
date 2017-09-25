@@ -51,13 +51,15 @@ if __name__ == '__main__':
         reverse = Twist(Vector3(-.2,0,0),Vector3(0,0,0))
         spin = Twist(Vector3(0,1,0),Vector3(0,0,0))
         lightspeed = Twist(Vector3(1,0,0),Vector3(0,0,0))
+        
+        # creates dict to reference and send payload
+        msg = {0:stop,1:forward,2:reverse,3:spin,4:lightspeed}
 
         # loop to send commands until halt
         while not rospy.is_shutdown():
 
             # each loop depending on which button is pushed we send it
             # to the robot to be executed
-            msg = {0:stop,1:forward,2:reverse,3:spin,4:lightspeed}
             pub.publish(msg[currentState])
 
             # must sleep so as to not overwhelm the robot
