@@ -4,7 +4,7 @@ import time
 
 
 class LtcPoll:
-    def __init__(self, smbus, debug=True):
+    def __init__(self, smbus, ip, debug=True):
         self.debug = debug
         self.bus = smbus
         self.addr = 0x6c
@@ -59,5 +59,7 @@ class LtcPoll:
 
 if __name__ == '__main__':
     bus = SMBus(1)
-    poller = LtcPoll.__init__(bus)
+    ip = raw_input('ip address of brix?')
+    print('ip is set to:', ip)
+    poller = LtcPoll.__init__(bus, ip)
     poller.start()
