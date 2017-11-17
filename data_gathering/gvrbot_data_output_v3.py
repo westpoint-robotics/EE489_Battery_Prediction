@@ -25,12 +25,35 @@ from geometry_msgs.msg import Vector3
 from datetime import datetime
 from gvrbot.msg import GvrbotMobilityData
 from gvrbot.msg import GvrbotOrientation
+import smbus2
+
+bus = SMBus(1)
+
 count = 0
 orient = [0,0,0,0]
 heading = 0
 pitchAngle = 0
 rollAngle = 0
 yawAngle = 0
+Lposition = 0
+Rposition = 0
+RVelocity = 0
+Velocity = 0
+Distance = 0
+VinV = 0
+AdinV = 0
+DEBUG = False
+voltage = 0
+current = 0
+temperature = 0
+relsoc = 0
+abssoc = 0
+ttoempty = 0
+remcap = 0
+fullcap = 0
+changingcurr = 0
+changingvolt = 0
+maxerror = 0
 
 #database initiailization
 db = mysql.connector.connect(host="192.168.200.82",user="root",password="toor",database="batterystudy")
@@ -38,6 +61,9 @@ curs = db.cursor()
 
 #database table initialization
 table = raw_input("Make a new table name: ")
+
+##### need to add  addtable = "CREATE TABLE " + str(table) + "(time DECIMAL(20,2), temperature NUMERIC, voltage NUMERIC, current NUMERIC, relsoc NUMERIC, abssoc NUMERIC, ttoempty NUMERIC,remcap NUMERIC, fullcap NUMERIC, changecurr NUMERIC, changevolt NUMERIC, maxerror NUMERIC);"
+##### also need to add a INTEGER for Vin and Adin
 addtable = "CREATE TABLE " +str(table) + "(time DECIMAL(20,2), Lposition NUMERIC, Rposition NUMERIC, Lvelocity NUMERIC, Rvelocity NUMERIC, Distance NUMERIC);"
 
 #table management
@@ -108,17 +134,16 @@ def orientation_callback(data):
 
 #receives information from /gvrbot_mobility_data
 def mobilityData_callback(data):
-	with open('mobilitydata.csv','a') as f:
-		writer = csv.writer(f)
 		global count
 		global Lold
 		global Rold
 		global Lencodercount
-		global Rencodercount 
-		if count==0: #enters blank row for new data group
-			writer.writerow(["","","","","","","",""])
-			writer.writerow(["Time (s)","LEncoder","REncoder","LPosition","RPosition","LVelocity","RVelocity","Distance"])
-		count += 1
+		global Rencodercount
+		global Lposition
+		global Rposition
+		global Rvelocity
+		global Lvelocity
+		global Distance
 		RCurrent = data.right_motor_current
 		LCurrent = data.left_motor_current
 		RSpeed = data.right_drive_motor_speed
@@ -140,10 +165,46 @@ def mobilityData_callback(data):
 		RVelocity = data.right_track_velocity
 		LVelocity = data.left_track_velocity
 		Distance = data.distance_travelled
-		writer.writerow([time.time(), Lposition, Rposition, LVelocity, RVelocity, Distance, heading, rollAngle, pitchAngle, yawAngle])
-                myquery = "INSERT INTO " + str(table) + "(time,Lposition, Rposition, LVelocity, RVelocity, Distance, heading, rollAngle, pitchAngle, yawAngle) VALUES (" + str(time.time())[4:]+", "+str(Lposition)+", "+str(Rposition)+", "+str(LVelocity)+", "+str(RVelocity)+", "+str(Distance)+", "+str(heading)+", "+str(rollAngle)+", "+str(pitchAngle)+", "+str(yawAngle)+")"
-                curs.execute(myquery)
-                db.commit()
+
+def pollLTC():
+	global VinV
+	global AdinV
+	global bus
+	VinV = bus.read_word_data(0x6c, 0x02)
+	AdinV = bus.read_word_data(0x6c, 0x04)
+
+def pollBatt():
+	global voltage
+	global current
+	global temperature
+	global relsoc
+	global abssoc
+	global ttoempty
+	global remcap
+ 	global fullcap
+	global changingcurr
+	global changingvolt
+	global maxerror
+	voltage = bus.read_word_data(0x0b, 0x09)  # voltage
+    current = bus.read_word_data(0x0b, 0x0a)  # current
+    temperature = bus.read_word_data(0x0b, 0x08)  # temperature
+    relsoc = bus.read_word_data(0x0b, 0x0d)  # relative state of charge
+    abssoc = bus.read_word_data(0x0b, 0x0e)  # absolute state of charge
+    ttoempty = bus.read_word_data(0x0b, 0x12)  # Average time to empty
+    remcap = bus.read_word_data(0x0b, 0x0f)  # Remaining Capacity
+    fullcap = bus.read_word_data(0x0b, 0x10)  # Full charge Capacity
+    changingcurr = bus.read_word_data(0x0b, 0x14) #Changing current
+    changingvolt = bus.read_word_data(0x0b, 0x15) #changing voltage
+	maxerror = bus.read_word_data(0x0b, 0x0c) # max error soc
+
+def post():
+	pollLTC() # AdinV #VinV
+	pollBatt()
+	##### need to add  "INSERT INTO " + str(table) + "(temperature, voltage, current, relsoc, abssoc, ttoempty, remcap, fullcap, changecurr, changevolt, maxerror ) VALUES (" + str(temperature) + ", " + str(voltage) + "," + str(current) + "," + str(relsoc) + "," + str(abssoc) + "," + str(ttoempty) + "," + str(remcap) + "," + str(fullcap) + "," + str(changingcurr) + "," + str(changingvolt) + "," + str(maxerror) +  ")"
+	##### also need to add a INTEGER for Vin (Vinv) and Adin (AdinV)
+    myquery = "INSERT INTO " + str(table) + "(time,Lposition, Rposition, LVelocity, RVelocity, Distance, heading, rollAngle, pitchAngle, yawAngle) VALUES (" + str(time.time())[4:]+", "+str(Lposition)+", "+str(Rposition)+", "+str(LVelocity)+", "+str(RVelocity)+", "+str(Distance)+", "+str(heading)+", "+str(rollAngle)+", "+str(pitchAngle)+", "+str(yawAngle)+")"
+    curs.execute(myquery)
+    db.commit()
 
 #subscribes to /gvrbot_mobility_data
 #Message Type: gvrbot/GvrbotMobilityData
@@ -151,13 +212,31 @@ def listener():
 	rospy.Subscriber("/gvrbot_mobility_data",GvrbotMobilityData,mobilityData_callback)
 	rospy.Subscriber("/gvrbot_orientation",GvrbotOrientation,orientation_callback)
 	rospy.Subscriber("/gvrbot/imu/data",Imu,imu_callback)
-	rospy.spin()
+	with open('mobilitydata.csv','a') as f:
+		writer = csv.writer(f)
+		try:
+			while 1:
+				writer.writerow([time.time(), Lposition, Rposition, LVelocity, RVelocity, Distance, heading, rollAngle, pitchAngle, yawAngle])
+				post()
+				time.sleep(1)
+		except KeyboardInterrupt as e:
+			print '[+] Ctrl+C detected. Exiting...'
+			import sys
+			sys.exit(0)
 
 
 if __name__ == '__main__':
+	inp = 2
+	while inp not in ['0','1','y','n']:
+		inp = raw_input("Should debug mode be turned on? [y/n] [1/0]").lower()
+		if inp in ['0','n']:
+			DEBUG = False
+		if inp in ['1','y']:
+			DEBUG = True
 	rospy.init_node('gvrMobility_data', anonymous=True)
 
-	try:        
+	try:
+		if DEBUG: print '[+] Starting'
 		listener()
 	except rospy.ROSInterruptException:
 		pass	
