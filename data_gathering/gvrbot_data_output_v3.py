@@ -64,7 +64,11 @@ table = raw_input("Make a new table name: ")
 
 ##### need to add  addtable = "CREATE TABLE " + str(table) + "(time DECIMAL(20,2), temperature NUMERIC, voltage NUMERIC, current NUMERIC, relsoc NUMERIC, abssoc NUMERIC, ttoempty NUMERIC,remcap NUMERIC, fullcap NUMERIC, changecurr NUMERIC, changevolt NUMERIC, maxerror NUMERIC);"
 ##### also need to add a INTEGER for Vin and Adin
-addtable = "CREATE TABLE " +str(table) + "(time DECIMAL(20,2), Lposition NUMERIC, Rposition NUMERIC, Lvelocity NUMERIC, Rvelocity NUMERIC, Distance NUMERIC);"
+addtable = "CREATE TABLE " +str(table) + "(id INTEGER AUTO_INCREMENT NOT NULL, time DECIMAL(20,2), Lposition NUMERIC, \
+       Rposition NUMERIC, Lvelocity NUMERIC, Rvelocity NUMERIC, Distance NUMERIC, \
+       temperature NUMERIC, voltage NUMERIC, current NUMERIC, relsoc NUMERIC, \
+       abssoc NUMERIC, ttoempty NUMERIC,remcap NUMERIC, fullcap NUMERIC, changecurr NUMERIC, \
+       changevolt NUMERIC, maxerror NUMERIC, Vin NUMERIC, Adin NUMERIC);"
 
 #table management
 try:
@@ -204,7 +208,15 @@ def post():
     pollBatt()
     ##### need to add  "INSERT INTO " + str(table) + "(temperature, voltage, current, relsoc, abssoc, ttoempty, remcap, fullcap, changecurr, changevolt, maxerror ) VALUES (" + str(temperature) + ", " + str(voltage) + "," + str(current) + "," + str(relsoc) + "," + str(abssoc) + "," + str(ttoempty) + "," + str(remcap) + "," + str(fullcap) + "," + str(changingcurr) + "," + str(changingvolt) + "," + str(maxerror) +  ")"
     ##### also need to add a INTEGER for Vin (Vinv) and Adin (AdinV)
-    myquery = "INSERT INTO " + str(table) + "(time,Lposition, Rposition, LVelocity, RVelocity, Distance, heading, rollAngle, pitchAngle, yawAngle) VALUES (" + str(time.time())[4:]+", "+str(Lposition)+", "+str(Rposition)+", "+str(LVelocity)+", "+str(RVelocity)+", "+str(Distance)+", "+str(heading)+", "+str(rollAngle)+", "+str(pitchAngle)+", "+str(yawAngle)+")"
+    myquery = "INSERT INTO " + str(table) + "(time,Lposition, Rposition, LVelocity, RVelocity, Distance,\
+                                 heading, rollAngle, pitchAngle, yawAngle, temperature, voltage, current, \
+                                relsoc, abssoc, ttoempty, remcap, fullcap, changecurr, changevolt, maxerror, \
+                                AdinV, VinV) VALUES (" + str(time.time())[4:]+", "+str(Lposition)+","\
+                                +str(Rposition)+", "+str(LVelocity)+", "+str(RVelocity)+", "+str(Distance)+","\
+                                +str(heading)+", "+str(rollAngle)+", "+str(pitchAngle)+", "+str(yawAngle)+","\
+                                +str(temperature)+","+str(voltage)+","+str(current+","+str(relsoc)+","+str(abssoc)+\
+                                ","+str(ttoempty)+","+str(remcap)+","+str(fullcap)+","+str(changingcurr)+","+str(changingvolt)+\
+                                ","+str(maxerror)+","+str(Vinv)+","+str(AdinV)+")"
     curs.execute(myquery)
     db.commit()
 
@@ -218,9 +230,12 @@ def listener():
         writer = csv.writer(f)
         try:
             while 1:
+                if DEBUG: print 'logging to mobilitydata.csv'
                 writer.writerow([time.time(), Lposition, Rposition, LVelocity, RVelocity, Distance, heading, rollAngle, pitchAngle, yawAngle])
                 post()
-                time.sleep(1)
+                if DEBUG: print 'adding values to DB:'
+                if DEBUG: print ''
+                time.sleep(0.1)
         except KeyboardInterrupt as e:
             print '[+] Ctrl+C detected. Exiting...'
             import sys
