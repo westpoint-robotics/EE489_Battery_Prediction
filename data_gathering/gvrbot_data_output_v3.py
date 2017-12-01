@@ -25,7 +25,7 @@ from geometry_msgs.msg import Vector3
 from datetime import datetime
 from gvrbot.msg import GvrbotMobilityData
 from gvrbot.msg import GvrbotOrientation
-import smbus2
+from smbus2 import SMBus
 
 bus = SMBus(1)
 
@@ -56,7 +56,7 @@ changingvolt = 0
 maxerror = 0
 
 #database initiailization
-db = mysql.connector.connect(host="192.168.200.82", user="root", password="toor", database="batterystudy")
+db = mysql.connector.connect(host="localhost", user="root", password="toor", database="batterystudy")
 curs = db.cursor()
 
 #database table initialization
@@ -68,7 +68,7 @@ addtable = "CREATE TABLE " +str(table) + "(id INTEGER AUTO_INCREMENT NOT NULL, t
        Rposition NUMERIC, Lvelocity NUMERIC, Rvelocity NUMERIC, Distance NUMERIC, \
        temperature NUMERIC, voltage NUMERIC, current NUMERIC, relsoc NUMERIC, \
        abssoc NUMERIC, ttoempty NUMERIC,remcap NUMERIC, fullcap NUMERIC, changecurr NUMERIC, \
-       changevolt NUMERIC, maxerror NUMERIC, Vin NUMERIC, Adin NUMERIC);"
+       changevolt NUMERIC, maxerror NUMERIC, Vin NUMERIC, Adin NUMERIC, PRIMARY KEY(id));"
 
 #table management
 try:
@@ -204,21 +204,42 @@ def pollBatt():
     maxerror = bus.read_word_data(0x0b, 0x0c) # max error soc
 
 def post():
+    global curs
+    global db
+    global voltage
+    global current
+    global temperature
+    global relsoc
+    global abssoc
+    global ttoempty
+    global remcap
+    global fullcap
+    global changingcurr
+    global changingvolt
+    global maxerror
+    global VinV
+    global AdinV
+    global count
+    global Lold
+    global Rold
+    global Lencodercount
+    global Rencodercount
+    global Lposition
+    global Rposition
+    global RVelocity
+    global LVelocity
+    global Distance
+    global rollAngle
+    global pitchAngle
+    global yawAngle
+    global heading
+    global orient
     pollLTC() # AdinV #VinV
     pollBatt()
-    ##### need to add  "INSERT INTO " + str(table) + "(temperature, voltage, current, relsoc, abssoc, ttoempty, remcap, fullcap, changecurr, changevolt, maxerror ) VALUES (" + str(temperature) + ", " + str(voltage) + "," + str(current) + "," + str(relsoc) + "," + str(abssoc) + "," + str(ttoempty) + "," + str(remcap) + "," + str(fullcap) + "," + str(changingcurr) + "," + str(changingvolt) + "," + str(maxerror) +  ")"
-    ##### also need to add a INTEGER for Vin (Vinv) and Adin (AdinV)
-    myquery = "INSERT INTO " + str(table) + "(time,Lposition, Rposition, LVelocity, RVelocity, Distance,\
-                                 heading, rollAngle, pitchAngle, yawAngle, temperature, voltage, current, \
-                                relsoc, abssoc, ttoempty, remcap, fullcap, changecurr, changevolt, maxerror, \
-                                AdinV, VinV) VALUES (" + str(time.time())[4:]+", "+str(Lposition)+","\
-                                +str(Rposition)+", "+str(LVelocity)+", "+str(RVelocity)+", "+str(Distance)+","\
-                                +str(heading)+", "+str(rollAngle)+", "+str(pitchAngle)+", "+str(yawAngle)+","\
-                                +str(temperature)+","+str(voltage)+","+str(current+","+str(relsoc)+","+str(abssoc)+\
-                                ","+str(ttoempty)+","+str(remcap)+","+str(fullcap)+","+str(changingcurr)+","+str(changingvolt)+\
-                                ","+str(maxerror)+","+str(Vinv)+","+str(AdinV)+")"
-    curs.execute(myquery)
-    db.commit()
+    myquery = str("INSERT INTO " + str(table) + "(time,Lposition, Rposition, LVelocity, RVelocity, Distance, heading, rollAngle, pitchAngle, yawAngle, temperature, voltage, current,relsoc, abssoc, ttoempty, remcap, fullcap, changecurr, changevolt, maxerror, Adin, Vin) VALUES (" + str(time.time())[4:]+", "+str(Lposition)+","+str(Rposition)+", "+str(LVelocity)+", "+str(RVelocity)+", "+str(Distance)+","+str(heading)+", "+str(rollAngle)+", "+str(pitchAngle)+", "+str(yawAngle)+","+str(temperature)+","+str(voltage)+","+str(current)+","+str(relsoc)+","+str(abssoc)+","+str(ttoempty)+","+str(remcap)+","+str(fullcap)+","+str(changingcurr)+","+str(changingvolt)+","+str(maxerror)+","+str(Vinv)+","+str(AdinV)+")")
+    print myquery
+    #curs.execute(myquery)
+    #db.commit()
 
 #subscribes to /gvrbot_mobility_data
 #Message Type: gvrbot/GvrbotMobilityData
