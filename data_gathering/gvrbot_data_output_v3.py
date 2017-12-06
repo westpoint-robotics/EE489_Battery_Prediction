@@ -64,11 +64,7 @@ table = raw_input("Make a new table name: ")
 
 ##### need to add  addtable = "CREATE TABLE " + str(table) + "(time DECIMAL(20,2), temperature NUMERIC, voltage NUMERIC, current NUMERIC, relsoc NUMERIC, abssoc NUMERIC, ttoempty NUMERIC,remcap NUMERIC, fullcap NUMERIC, changecurr NUMERIC, changevolt NUMERIC, maxerror NUMERIC);"
 ##### also need to add a INTEGER for Vin and Adin
-addtable = "CREATE TABLE " +str(table) + "(id INTEGER AUTO_INCREMENT NOT NULL, time DECIMAL(20,2), Lposition NUMERIC, \
-       Rposition NUMERIC, Lvelocity NUMERIC, Rvelocity NUMERIC, Distance NUMERIC, \
-       temperature NUMERIC, voltage NUMERIC, current NUMERIC, relsoc NUMERIC, \
-       abssoc NUMERIC, ttoempty NUMERIC,remcap NUMERIC, fullcap NUMERIC, changecurr NUMERIC, \
-       changevolt NUMERIC, maxerror NUMERIC, Vin NUMERIC, Adin NUMERIC, PRIMARY KEY(id));"
+addtable = "CREATE TABLE " +str(table) + "(id INTEGER AUTO_INCREMENT NOT NULL, time DECIMAL(20,2), Lposition NUMERIC, Rposition NUMERIC, Lvelocity NUMERIC, Rvelocity NUMERIC, Distance NUMERIC, heading NUMERIC, rollAngle NUMERIC, pitchAngle NUMERIC, yawAngle NUMERIC, temperature NUMERIC, voltage NUMERIC, current NUMERIC, relsoc NUMERIC, abssoc NUMERIC, ttoempty NUMERIC,remcap NUMERIC, fullcap NUMERIC, changecurr NUMERIC, changevolt NUMERIC, maxerror NUMERIC, Vin NUMERIC, Adin NUMERIC, PRIMARY KEY(id));"
 
 #table management
 try:
@@ -236,10 +232,10 @@ def post():
     global orient
     pollLTC() # AdinV #VinV
     pollBatt()
-    myquery = str("INSERT INTO " + str(table) + "(time,Lposition, Rposition, LVelocity, RVelocity, Distance, heading, rollAngle, pitchAngle, yawAngle, temperature, voltage, current,relsoc, abssoc, ttoempty, remcap, fullcap, changecurr, changevolt, maxerror, Adin, Vin) VALUES (" + str(time.time())[4:]+", "+str(Lposition)+","+str(Rposition)+", "+str(LVelocity)+", "+str(RVelocity)+", "+str(Distance)+","+str(heading)+", "+str(rollAngle)+", "+str(pitchAngle)+", "+str(yawAngle)+","+str(temperature)+","+str(voltage)+","+str(current)+","+str(relsoc)+","+str(abssoc)+","+str(ttoempty)+","+str(remcap)+","+str(fullcap)+","+str(changingcurr)+","+str(changingvolt)+","+str(maxerror)+","+str(Vinv)+","+str(AdinV)+")")
+    myquery = str("INSERT INTO " + str(table) + "(time,Lposition, Rposition, LVelocity, RVelocity, Distance, heading, rollAngle, pitchAngle, yawAngle, temperature, voltage, current,relsoc, abssoc, ttoempty, remcap, fullcap, changecurr, changevolt, maxerror, Adin, Vin) VALUES (" + str(time.time())[4:]+", "+str(Lposition)+","+str(Rposition)+", "+str(LVelocity)+", "+str(RVelocity)+", "+str(Distance)+","+str(heading)+", "+str(rollAngle)+", "+str(pitchAngle)+", "+str(yawAngle)+","+str(temperature)+","+str(voltage)+","+str(current)+","+str(relsoc)+","+str(abssoc)+","+str(ttoempty)+","+str(remcap)+","+str(fullcap)+","+str(changingcurr)+","+str(changingvolt)+","+str(maxerror)+","+str(VinV)+","+str(AdinV)+")")
     print myquery
-    #curs.execute(myquery)
-    #db.commit()
+    curs.execute(myquery)
+    db.commit()
 
 #subscribes to /gvrbot_mobility_data
 #Message Type: gvrbot/GvrbotMobilityData
